@@ -14,12 +14,12 @@ close all;
 a = 1;  %given by problem
 dom = linspace(0,1,50); %create a grid of 50 points from 0 to 1
 sigma = 0.08; %variable in the exact solution, given
-deltaX = 1/50;
+deltaX = 1/50; %change in x determined by grid size of 50 and span of 0 to 1
 
 %Explicit Euler Method       u(n+1) = u(n) + h*u'(n)
 %-------------------------------------------------------------------------
-courantNum = 0.1;
-h = courantNum*deltaX/a;
+courantNum = 0.1; %given
+h = courantNum*deltaX/a; %calculate time step h
 
 u_EE = zeros(50,501); %create matrix for EE solution
 
@@ -36,7 +36,7 @@ A_row_vec(end+1:50) =  0;
 
 A = (toeplitz(A_col_vec, A_row_vec)); 
 
-%time-march solution
+%time-march EE solution
 for t = 2:501
     u_EE(:,t) = u_EE(:,t-1) + h*A*u_EE(:,t-1); 
 end
@@ -52,7 +52,7 @@ end
 %use explicit Euler method to approximate 2nd time-step solution
 u_AB2(:,2) = u_AB2(:,1) + h*A*u_AB2(:,1);
 
-%proceed with AB2 approximation
+%proceed with AB2 time marching approximation
 for t = 3:501
     u_AB2(:,t) = u_AB2(:,t-1) + 0.5*h*(3*A*u_AB2(:,t-1) - A*u_AB2(:,t-2));
 end
@@ -69,6 +69,7 @@ for i = 1:50
     u_IE(i,1) = exp((-0.5)*((dom(i) - 0.5)/sigma)^2); %calculate initial condition
 end
 
+%IE time marching approximation
 for t = 2:501
     u_IE(:,t) = inv(eye(50) - h*A)*u_IE(:,t-1);
 end
@@ -82,6 +83,7 @@ for i = 1:50
     u_AM2(i,1) = exp((-0.5)*((dom(i) - 0.5)/sigma)^2); %calculate initial condition
 end
 
+%AM2 time marching approximation
 for t = 2:501
     u_AM2(:,t) = inv(eye(50) - 0.5*h*A)*(((eye(50) + 0.5*h*A)*u_AM2(:,t-1)));
 end
@@ -89,7 +91,9 @@ end
 
 %4th Order Runge-Kutta (RK4)
 %-------------------------------------------------------------------------
-u_RK4 = zeros(50,501); %create matrix for AM2 solution
+
+%create matrix for AM2 solution and intermediate steps
+u_RK4 = zeros(50,501); 
 u_hat = zeros(50,501);
 u_tilde = zeros(50,501);
 u_bar = zeros(50,501);
@@ -98,6 +102,7 @@ for i = 1:50
     u_RK4(i,1) = exp((-0.5)*((dom(i) - 0.5)/sigma)^2); %calculate initial condition
 end
 
+%RK4 time marching approximation
 for t = 2:501
     
     u_hat(:,t) = u_RK4(:, t-1) + 0.5*h*A*u_RK4(:, t-1);
@@ -110,6 +115,7 @@ for t = 2:501
 
 end
 
+%plot results
 figure
 subplot(3,2,1)
 plot(dom, u_EE(:,1), dom, u_EE(:,501));
