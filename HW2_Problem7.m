@@ -60,7 +60,7 @@ end
 
 %Implicit Euler Method          u_n+1 = u_n + h*u'_n+1
 %-------------------------------------------------------------------------
-courantNum = 1;
+%courantNum = 1;
 h = courantNum*deltaX/a;
 
 u_IE = zeros(50,501); %create matrix for IE solution
@@ -74,7 +74,6 @@ for t = 2:501
 end
 
 
-
 %Trapezoidal (AM2)
 %-------------------------------------------------------------------------
 u_AM2 = zeros(50,501); %create matrix for AM2 solution
@@ -84,18 +83,75 @@ for i = 1:50
 end
 
 for t = 2:501
-    u_AM2(:,t) = inv(eye(50) - 0.5*h*A)*((u_AM2(:,t-1)*(eye(501) + 0.5*h*A)));
+    u_AM2(:,t) = inv(eye(50) - 0.5*h*A)*(((eye(50) + 0.5*h*A)*u_AM2(:,t-1)));
 end
 
 
 %4th Order Runge-Kutta (RK4)
 %-------------------------------------------------------------------------
+u_RK4 = zeros(50,501); %create matrix for AM2 solution
+u_hat = zeros(50,501);
+u_tilde = zeros(50,501);
+u_bar = zeros(50,501);
 
-plot(dom, u_EE(:,1), dom, u_EE(:,501), dom, u_AB2(:,501), '--',...
-    dom, u_IE(:,501), '.', dom, u_AM2(:, 501));
-title('AB2 Approximation')
+for i = 1:50
+    u_RK4(i,1) = exp((-0.5)*((dom(i) - 0.5)/sigma)^2); %calculate initial condition
+end
+
+for t = 2:501
+    
+    u_hat(:,t) = u_RK4(:, t-1) + 0.5*h*A*u_RK4(:, t-1);
+
+    u_tilde(:,t) = u_RK4(:, t-1) +  0.5*h*A*u_hat(:,t);
+
+    u_bar(:,t) = u_RK4(:,t-1) + h*A*u_tilde(:,t);
+
+    u_RK4(:,t) = u_RK4(:,t-1) + (1/6)*h*(A*u_RK4(:,t-1) + 2*(A*u_hat(:,t) + A*u_tilde(:,t)) + A*u_bar(:,t));
+
+end
+
+figure
+subplot(3,2,1)
+plot(dom, u_EE(:,1), dom, u_EE(:,501));
+title('Explicit Euler Approximation')
 ylabel('u_n')
 xlabel('Displacement')
-legend('Exact', 'EE', 'AB2')
+legend('Exact', 'EE')
+xticks([0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1.0])
+xticklabels({'0','.1','.2','.3','.4', '.5', '.6', '.7', '.8', '.9', '1'})
+
+subplot(3,2,2)
+plot(dom, u_EE(:,1), dom, u_AB2(:,501));
+title('2nd Order Adams-Bashforth Approximation')
+ylabel('u_n')
+xlabel('Displacement')
+legend('Exact', 'AB2')
+xticks([0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1.0])
+xticklabels({'0','.1','.2','.3','.4', '.5', '.6', '.7', '.8', '.9', '1'})
+
+subplot(3,2,3)
+plot(dom, u_EE(:,1), dom, u_IE(:,501));
+title('Implicit Euler Approximation')
+ylabel('u_n')
+xlabel('Displacement')
+legend('Exact', 'IE')
+xticks([0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1.0])
+xticklabels({'0','.1','.2','.3','.4', '.5', '.6', '.7', '.8', '.9', '1'})
+
+subplot(3,2,4)
+plot(dom, u_EE(:,1), dom, u_AM2(:, 501));
+title('Trapezoidal Approximation')
+ylabel('u_n')
+xlabel('Displacement')
+legend('Exact', 'Trapezoidal')
+xticks([0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1.0])
+xticklabels({'0','.1','.2','.3','.4', '.5', '.6', '.7', '.8', '.9', '1'})
+
+subplot(3,2,5)
+plot(dom, u_EE(:,1), dom, u_RK4(:,100));
+title('4th Order Runge-Kutta Approximation')
+ylabel('u_n')
+xlabel('Displacement')
+legend('Exact', 'RK4')
 xticks([0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1.0])
 xticklabels({'0','.1','.2','.3','.4', '.5', '.6', '.7', '.8', '.9', '1'})
