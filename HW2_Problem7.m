@@ -34,7 +34,10 @@ A_col_vec(end+1:50) =  0;
 A_row_vec = [0 1];
 A_row_vec(end+1:50) =  0;
 
-A = (toeplitz(A_col_vec, A_row_vec)); 
+A = (toeplitz(A_col_vec, A_row_vec));
+A(50,1) = 1;
+A(1,50) = -1;
+A = 1/(2*deltaX)*A;
 
 %time-march EE solution
 for t = 2:501
@@ -154,7 +157,7 @@ xticks([0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1.0])
 xticklabels({'0','.1','.2','.3','.4', '.5', '.6', '.7', '.8', '.9', '1'})
 
 subplot(3,2,5)
-plot(dom, u_EE(:,1), dom, u_RK4(:,100));
+plot(dom, u_EE(:,1), dom, u_RK4(:,501));
 title('4th Order Runge-Kutta Approximation')
 ylabel('u_n')
 xlabel('Displacement')
