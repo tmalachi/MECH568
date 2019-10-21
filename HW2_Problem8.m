@@ -25,7 +25,7 @@ u_bar = zeros(50,501);
 A_col_vec = [0; -8; 1];
 A_col_vec(end+1:50) =  0;
 
-A_row_vec = [0 8 1];
+A_row_vec = [0 8 -1];
 A_row_vec(end+1:50) =  0;
 
 A = (toeplitz(A_col_vec, A_row_vec));
@@ -34,19 +34,6 @@ A(1,50) = -8;
 A(49,1) = 1;
 A(1, 49) = -1;
 A = 1/(12*deltaX)*A;
-
-% A_col_vec = [-6; -8; 1];
-% A_col_vec(end+1:50) =  0;
-% 
-% A_row_vec = [0 8 1];
-% A_row_vec(end+1:50) =  0;
-% 
-% A = (toeplitz(A_col_vec, A_row_vec));
-% A(50,1) = 8;
-% A(1,50) = -8;
-% A(49,1) = 1;
-% A(1, 49) = -1;
-% A = 1/(12*deltaX)*A;
 
 for i = 1:50
     u_RK4(i,1) = exp((-0.5)*((dom(i) - 0.5)/sigma)^2); %calculate initial condition
