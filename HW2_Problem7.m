@@ -11,6 +11,7 @@ clc;
 clear all;
 close all;
 
+time = 1; %time to solve for
 a = 1;  %given by problem
 dom = linspace(0,1,50); %create a grid of 50 points from 0 to 1
 sigma = 0.08; %variable in the exact solution, given
@@ -37,7 +38,7 @@ A_row_vec(end+1:50) =  0;
 A = (toeplitz(A_col_vec, A_row_vec));
 A(50,1) = 1;
 A(1,50) = -1;
-A = 1/(2*deltaX)*A;
+A = -1/(2*deltaX)*A;
 
 %time-march EE solution
 for t = 2:501
@@ -63,31 +64,31 @@ end
 
 %Implicit Euler Method          u_n+1 = u_n + h*u'_n+1
 %-------------------------------------------------------------------------
-%courantNum = 1;
+courantNum = 1;
 h = courantNum*deltaX/a;
 
-u_IE = zeros(50,501); %create matrix for IE solution
+u_IE = zeros(50,time/h+1); %create matrix for IE solution
 
 for i = 1:50
     u_IE(i,1) = exp((-0.5)*((dom(i) - 0.5)/sigma)^2); %calculate initial condition
 end
 
 %IE time marching approximation
-for t = 2:501
+for t = 2:time/h + 1
     u_IE(:,t) = inv(eye(50) - h*A)*u_IE(:,t-1);
 end
 
 
 %Trapezoidal (AM2)
 %-------------------------------------------------------------------------
-u_AM2 = zeros(50,501); %create matrix for AM2 solution
+u_AM2 = zeros(50,time/h+1); %create matrix for AM2 solution
 
 for i = 1:50
     u_AM2(i,1) = exp((-0.5)*((dom(i) - 0.5)/sigma)^2); %calculate initial condition
 end
 
 %AM2 time marching approximation
-for t = 2:501
+for t = 2:time/h+1
     u_AM2(:,t) = inv(eye(50) - 0.5*h*A)*(((eye(50) + 0.5*h*A)*u_AM2(:,t-1)));
 end
 
@@ -96,17 +97,17 @@ end
 %-------------------------------------------------------------------------
 
 %create matrix for AM2 solution and intermediate steps
-u_RK4 = zeros(50,501); 
-u_hat = zeros(50,501);
-u_tilde = zeros(50,501);
-u_bar = zeros(50,501);
+u_RK4 = zeros(50,time/h+1); 
+u_hat = zeros(50,time/h+1);
+u_tilde = zeros(50,time/h+1);
+u_bar = zeros(50,time/h+1);
 
 for i = 1:50
     u_RK4(i,1) = exp((-0.5)*((dom(i) - 0.5)/sigma)^2); %calculate initial condition
 end
 
 %RK4 time marching approximation
-for t = 2:501
+for t = 2:time/h+1
     
     u_hat(:,t) = u_RK4(:, t-1) + 0.5*h*A*u_RK4(:, t-1);
 
@@ -130,7 +131,7 @@ xticks([0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1.0])
 xticklabels({'0','.1','.2','.3','.4', '.5', '.6', '.7', '.8', '.9', '1'})
 
 subplot(3,2,2)
-plot(dom, u_EE(:,1), dom, u_AB2(:,501));
+plot(dom, u_AB2(:,1), dom, u_AB2(:,501));
 title('2nd Order Adams-Bashforth Approximation')
 ylabel('u_n')
 xlabel('Displacement')
@@ -139,7 +140,7 @@ xticks([0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1.0])
 xticklabels({'0','.1','.2','.3','.4', '.5', '.6', '.7', '.8', '.9', '1'})
 
 subplot(3,2,3)
-plot(dom, u_EE(:,1), dom, u_IE(:,501));
+plot(dom, u_IE(:,1), dom, u_IE(:,time/h+1));
 title('Implicit Euler Approximation')
 ylabel('u_n')
 xlabel('Displacement')
@@ -148,7 +149,7 @@ xticks([0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1.0])
 xticklabels({'0','.1','.2','.3','.4', '.5', '.6', '.7', '.8', '.9', '1'})
 
 subplot(3,2,4)
-plot(dom, u_EE(:,1), dom, u_AM2(:, 501));
+plot(dom, u_AM2(:,1), dom, u_AM2(:, time/h+1));
 title('Trapezoidal Approximation')
 ylabel('u_n')
 xlabel('Displacement')
@@ -157,7 +158,7 @@ xticks([0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1.0])
 xticklabels({'0','.1','.2','.3','.4', '.5', '.6', '.7', '.8', '.9', '1'})
 
 subplot(3,2,5)
-plot(dom, u_EE(:,1), dom, u_RK4(:,501));
+plot(dom, u_RK4(:,1), dom, u_RK4(:,time/h+1));
 title('4th Order Runge-Kutta Approximation')
 ylabel('u_n')
 xlabel('Displacement')
