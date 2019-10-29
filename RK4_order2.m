@@ -5,7 +5,7 @@
 % Solution to the one-dimensional linear convection equation using
 % 2nd-order centered difference in space and RK4 time marching.
 
-function [u_RK4,error] = RK4_order2(courant, nodes)
+function [u_RK4,error] = RK4_order2(courant, nodes, time)
 
 a = 1;  %given by problem
 sigma = 0.08; %variable in the exact solution, given
@@ -32,14 +32,14 @@ A_row_vec(end+1:nodes) =  0;
 A = (toeplitz(A_col_vec, A_row_vec));
 A(nodes,1) = 1;
 A(1,nodes) = -1;
-A = 1/(2*deltaX)*A;
+A = -1/(2*deltaX)*A;
 
 for i = 1:nodes
     u_RK4(i,1) = exp((-0.5)*((grid(i) - 0.5)/sigma)^2); %calculate initial condition
 end
 
 %RK4 time marching approximation
-for t = 2:(1/h + 1)
+for t = 2:(time/h + 1)
     
     u_hat(:,t) = u_RK4(:, t-1) + 0.5*h*A*u_RK4(:, t-1);
 
@@ -51,6 +51,6 @@ for t = 2:(1/h + 1)
 
 end
 
-error = sqrt(sum(((u_RK4(:,1/h + 1) - u_RK4(:,1)).^2)/nodes));
+error = sqrt(sum(((u_RK4(:,time/h + 1) - u_RK4(:,1)).^2)/nodes));
 
 end
