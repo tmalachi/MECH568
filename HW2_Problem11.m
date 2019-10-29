@@ -57,11 +57,11 @@ for t = 2:time/h+1
 end
 
 %Exact solution u(x,t) = u_0*(x - a*t)
-
-u_exact = u_RK*(i - a*t*h)
-
+for i = 1:nodes
+    u_exact(i) = sin(omega*(t*h - i*deltaX));
+end
 %plot results
-plot(dom, u_RK4(:,1), dom, u_RK4(:,time/h+1));
+plot(dom, u_exact, dom, u_RK4(:,time/h+1), '--');
 title('4th Order Runge-Kutta Approximation')
 ylabel('u_n')
 xlabel('Displacement')
