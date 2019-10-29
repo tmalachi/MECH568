@@ -32,7 +32,7 @@ A(nodes,1) = 8;
 A(1,nodes) = -8;
 A(nodes-1,1) = 1;
 A(1, nodes-1) = -1;
-A = 1/(12*deltaX)*A;
+A = -1/(12*deltaX)*A;
 
 for i = 1:nodes
     u_RK4(i,1) = exp((-0.5)*((grid(i) - 0.5)/sigma)^2); %calculate initial condition
