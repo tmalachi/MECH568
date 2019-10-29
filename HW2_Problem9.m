@@ -1,9 +1,9 @@
-% MECH 568 HW 2 Problem 6.8
+% MECH 568 HW 2 Problem 6.9
 % Author: Thomas Andreano
 % Version 1: 10/17/2019
 %-----------------------------------------------------------------------
-% Solution to the one-dimensional linear convection equation using
-% 4th-order (noncompact) difference in space and RK4 time marching.
+% Error of the 2nd order differencing scheme with RK4 method
+% at 100, 200, and 400 nodes.
 
 clc;
 clear all;
@@ -15,9 +15,9 @@ courantNum = 1; %given
 
 %solution with grid space of 100
 %--------------------------------------------------------------------------
-[u_100, error_100] = RK4_order2(1,100);
-[u_200, error_200] = RK4_order2(1,200);
-[u_400, error_400] = RK4_order2(1,400);
+[u_100, error_100] = RK4_order2(1,100, 1);
+[u_200, error_200] = RK4_order2(1,200, 1);
+[u_400, error_400] = RK4_order2(1,400, 1);
 
 x = [100, 200, 400];
 error = [error_100, error_200, error_400];
