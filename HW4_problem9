@@ -1,0 +1,65 @@
+% MECH 568 HW #4 Problem 9.4
+% Author: Thomas Andreano
+% 11/26/2019
+%--------------------------------------------------------------------------
+%
+% Solves the following equation using 2nd order differences
+%
+%               d2u/dx2 - 6x = 0 
+%
+% Domain: 0 <= x <= 1
+% Boundary conditions: u(0) = 0, u(1) = 1
+% Initial condition: u(x) = 0
+% Grid size: M = 39
+%
+% Point Jacobi, Gauss-Seidel, SOR w/ optimum value of omega, and the
+% 3-step Richardson methiod are used.
+%--------------------------------------------------------------------------
+
+clear all;
+close all;
+clc;
+
+nodes = 39;
+dom = linspace(0, 1, nodes);
+u = zeros(1,nodes);
+bc = zeros(1,nodes);
+bc(2) = 1;
+g = 6*dom;
+
+deltaX = 1/nodes;
+
+%create A matrix for approximation: u' = A*u
+A_col_vec = zeros(nodes,1);
+A_col_vec(1) = -2;
+A_col_vec(2) = 1;
+
+A_row_vec = zeros(1,nodes);
+A_row_vec(1) = -2;
+A_row_vec(2) = 1;
+
+A = (toeplitz(A_col_vec, A_row_vec));
+
+
+
+%Point Jacobi
+%--------------------------------------------------------------------------
+
+
+H = repelem(-2, nodes);
+
+
+% Gauss Seidel
+%--------------------------------------------------------------------------
+
+
+
+
+% SOR
+%--------------------------------------------------------------------------
+
+
+
+
+% 3-step Richardson
+%--------------------------------------------------------------------------
