@@ -22,12 +22,14 @@ clc;
 
 nodes = 39;
 dom = linspace(0, 1, nodes);
-u = zeros(1,nodes);
-bc = zeros(1,nodes);
-bc(2) = 1;
+deltaX = (dom(end) - dom(1))/nodes;
+
+u = ones(nodes, 1);
+bc = zeros(nodes,1);
+bc(end) = 1;
 g = 6*dom;
 
-deltaX = 1/nodes;
+
 
 %create A matrix for approximation: u' = A*u
 A_col_vec = zeros(nodes,1);
@@ -40,19 +42,38 @@ A_row_vec(2) = 1;
 
 A = (toeplitz(A_col_vec, A_row_vec));
 
+I = eye(39);
+f = deltaX^2*I * (g - bc);
 
 
-%Point Jacobi
+tol = 1e-6;
+
+
+%% Point Jacobi
 %--------------------------------------------------------------------------
 
 
-H = repelem(-2, nodes);
+H = diag(diag(A));
+
+err = inf;
+
+while err > tol
+    
+        
+        du = H\(f - A*u);
+        u = u + du;
+        
+        err = max(abs(du./u));
+
+end
+
+plot(dom, u)
 
 
-% Gauss Seidel
+%% Gauss Seidel
 %--------------------------------------------------------------------------
 
-
+% H = -(repelem(1, nodes);
 
 
 % SOR
