@@ -5,7 +5,7 @@
 %
 % Solves the following equation using 2nd order differences
 %
-%               d2u/dx2 - 6x = 0 
+%               d2u/dx2 - 6x = 0
 %
 % Domain: 0 <= x <= 1
 % Boundary conditions: u(0) = 0, u(1) = 1
@@ -21,66 +21,188 @@ close all;
 clc;
 
 nodes = 39;
-dom = linspace(0, 1, nodes);
-deltaX = (dom(end) - dom(1))/nodes;
+dom = linspace(0, 1, nodes)';
+deltaX = (dom(end) - dom(1))/(nodes);
 
-u = ones(nodes, 1);
 bc = zeros(nodes,1);
 bc(end) = 1;
 g = 6*dom;
-
-
 
 %create A matrix for approximation: u' = A*u
 A_col_vec = zeros(nodes,1);
 A_col_vec(1) = -2;
 A_col_vec(2) = 1;
-
 A_row_vec = zeros(1,nodes);
 A_row_vec(1) = -2;
 A_row_vec(2) = 1;
-
 A = (toeplitz(A_col_vec, A_row_vec));
 
-I = eye(39);
-f = deltaX^2*I * (g - bc);
-
+I = eye(nodes);
+f = deltaX^2*g - bc;
 
 tol = 1e-6;
 
 
 %% Point Jacobi
 %--------------------------------------------------------------------------
+H_PJ = -diag(diag(A));
+u_PJ = zeros(nodes, 1);
 
-
-H = diag(diag(A));
-
-err = inf;
-
-while err > tol
+r = inf;
+count = 0;
+save_count = 1;
+while r > tol
+   
+    u_PJ = (I + H_PJ\A)*u_PJ - H_PJ\f;
     
-        
-        du = H\(f - A*u);
-        u = u + du;
-        
-        err = max(abs(du./u));
+    if count > 0
+        r_old = r;
+        r_new = max(abs(A*u_PJ - f));
 
+        if r_new < r_set/10^(save_count)
+            u_save(:,:,save_count) = u_PJ;
+            save_count = save_count + 1;
+        end
+        
+         r = r_new;
+    else
+        r_set = max(abs(A*u_PJ - f));
+        r = r_set;
+    end
+    
+    L2_PJ(count+1) = vecnorm(r,2); 
+    count = count + 1;
+    
 end
 
-plot(dom, u)
+dom_final = linspace(0, 1, nodes+1);
+u_PJ(end + 1) = 1;
+u_PJ_1 = u_save(:,:,2);
+u_PJ_1(end + 1) = 1;
+u_PJ_2 = u_save(:,:,3);
+u_PJ_2(end + 1) = 1;
+u_PJ_3 = u_save(:,:,4);
+u_PJ_3(end + 1) = 1;
 
+figure(1)
+plot(dom_final,u_PJ_1, dom_final, u_PJ_2, dom_final, u_PJ_3,...
+    dom_final, u_PJ, '--')
+title('Point Jacobi Method')
+legend('Solution after 100x residual decrease',...
+    'Solution after 1000x residual decrease',...
+    'Solution after 10000x residual decrease', 'Final solution')
+
+figure(2)
+plot(linspace(1, count, count), log(L2_PJ))
+title('L2 Norm of Residual for Point Jacobi')
 
 %% Gauss Seidel
 %--------------------------------------------------------------------------
 
-% H = -(repelem(1, nodes);
+H_GS = -(tril(A));
+u_GS = zeros(nodes, 1);
 
+r = inf;
+count = 0;
+save_count = 1;
 
-% SOR
+while r > tol
+   
+    u_GS = (I + H_GS\A)*u_GS - H_GS\f;
+
+    if count > 0
+        r_old = r;
+        r_new = max(abs(A*u_GS - f));
+
+        if r_new < r_set/10^(save_count)
+            u_save(:,:,save_count) = u_GS;
+            save_count = save_count + 1;
+        end
+
+        r = r_new;
+    else
+        r_set = max(abs(A*u_GS - f));
+        r = r_set;
+    end
+    
+    L2_GS(count+1) = vecnorm(r,2); 
+    count = count + 1;
+
+end
+
+u_GS(end + 1) = 1;
+u_GS_1 = u_save(:,:,2);
+u_GS_1(end + 1) = 1;
+u_GS_2 = u_save(:,:,3);
+u_GS_2(end + 1) = 1;
+u_GS_3 = u_save(:,:,4);
+u_GS_3(end + 1) = 1;
+
+figure(3)
+plot(dom_final,u_GS_1, dom_final, u_GS_2, dom_final, u_GS_3,...
+    dom_final, u_GS, '--')
+title('Gauss Seidel Method')
+legend('Solution after 100x residual decrease',...
+    'Solution after 1000x residual decrease',...
+    'Solution after 10000x residual decrease', 'Final solution')
+
+figure(4)
+plot(linspace(1, count, count), log(L2_GS))
+title('L2 Norm of Residual for Gauss Seidel')
+
+%% SOR
 %--------------------------------------------------------------------------
+H_SOR = -(tril(A)) + diag(diag(A)) + (1 + sin(pi/nodes + 1))*I;
+u_SOR = zeros(nodes, 1);
+
+r = inf;
+count = 0;
+save_count = 1;
+
+while r > tol
+   
+    u_SOR = (I + H_SOR\A)*u_SOR - H_SOR\f;
+
+    if count > 0
+        r_old = r;
+        r_new = max(abs(A*u_SOR - f));
+
+        if r_new < r_set/10^(save_count)
+            u_save(:,:,save_count) = u_SOR;
+            save_count = save_count + 1;
+        end
+
+        r = r_new;
+    else
+        r_set = max(abs(A*u_SOR - f));
+        r = r_set;
+    end
+    
+    L2_SOR(count+1) = vecnorm(r,2); 
+    count = count + 1;
+
+end
+
+u_SOR(end + 1) = 1;
+u_SOR_1 = u_save(:,:,2);
+u_SOR_1(end + 1) = 1;
+u_SOR_2 = u_save(:,:,3);
+u_SOR_2(end + 1) = 1;
+u_SOR_3 = u_save(:,:,4);
+u_SOR_3(end + 1) = 1;
+
+figure(5)
+plot(dom_final,u_SOR_1, dom_final, u_SOR_2, dom_final, u_SOR_3,...
+    dom_final, u_SOR, '--')
+title('Optimum SOR Method')
+legend('Solution after 100x residual decrease',...
+    'Solution after 1000x residual decrease',...
+    'Solution after 10000x residual decrease', 'Final solution')
+
+figure(6)
+plot(linspace(1, count, count), log(L2_SOR))
+title('L2 Norm of residual for Optimum SOR')
 
 
-
-
-% 3-step Richardson
+%% 3-step Richardson
 %--------------------------------------------------------------------------
