@@ -94,8 +94,9 @@ legend('Solution after 100x residual decrease',...
     'Solution after 1000x residual decrease',...
     'Solution after 10000x residual decrease', 'Final solution')
 
+iters = linspace(1, count, count);
 figure(2)
-plot(linspace(1, count, count), log(L2_PJ))
+plot(iters, log(L2_PJ))
 title('L2 Norm of Residual for Point Jacobi')
 
 % %% Gauss Seidel
@@ -225,9 +226,8 @@ save_count = 1;
 while r > tol
    
     for i = 1:3
-        u_R = (I + h(i)*inv(H_R)*A)*u_R - h(i)*inv(H_R)*f;
+        u_R = (I + h(i)*(H_R\A))*u_R - h(i)*(H_R\f);
     end
-   
    
     if count > 0
         r_old = r;
