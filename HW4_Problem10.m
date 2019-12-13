@@ -139,13 +139,15 @@ r = inf;
 count = 0;
 save_count = 1;
 while r > tol
-   
+       
     for i = 1:3
-         u_R = h(i)*(iter_mat*u_R - iter_mat*(A\f) + A\f);
+         G1 = I + h(i)*(H_R\A);
+         iter_mat = (I - I_21*(A2\R_12)*A)*G1;
+         u_R_temp = iter_mat*u_R - iter_mat*(A\f) + (A\f);
+         u_R = u_R_temp;
     end
    
-   
-    if count > 0
+       if count > 0
         r_old = r;
         r_new = max(abs(A*u_R - f));
 
@@ -173,7 +175,7 @@ u_R_2(end + 1) = 1;
 u_R_3 = u_save(:,:,4);
 u_R_3(end + 1) = 1;
 
-figure(7)
+figure(3)
 plot(dom_final,u_R_1, dom_final, u_R_2, dom_final, u_R_3,...
     dom_final, u_R, '--')
 title('Richardson Method')
@@ -181,6 +183,6 @@ legend('Solution after 100x residual decrease',...
     'Solution after 1000x residual decrease',...
     'Solution after 10000x residual decrease', 'Final solution')
 
-figure(8)
+figure(4)
 plot(linspace(1, count, count), log(L2_R))
 title('L2 Norm of Residual for Richardson Method')
