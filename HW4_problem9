@@ -1,6 +1,6 @@
 % MECH 568 HW #4 Problem 9.4
 % Author: Thomas Andreano
-% 11/26/2019
+% 12/13/2019
 %--------------------------------------------------------------------------
 %
 % Solves the following equation using 2nd order differences
@@ -21,12 +21,12 @@ close all;
 clc;
 
 nodes = 39;
-dom = linspace(0, 1, nodes)';
-deltaX = (dom(end) - dom(1))/(nodes);
+dom = linspace(0, 1, nodes)';    %create grid vector
+deltaX = (dom(end) - dom(1))/(nodes); %calculate grid spacing
 
 bc = zeros(nodes,1);
 bc(end) = 1;
-g = 6*dom;
+g = 6*dom; %create g vector
 
 %create A matrix for approximation: u' = A*u
 A_col_vec = zeros(nodes,1);
@@ -38,7 +38,7 @@ A_row_vec(2) = 1;
 A = (toeplitz(A_col_vec, A_row_vec));
 
 I = eye(nodes);
-f = deltaX^2*g - bc;
+f = deltaX^2*g - bc; %create f vector
 
 tol = 1e-6;
 
@@ -48,7 +48,7 @@ tol = 1e-6;
 H_PJ = -diag(diag(A));
 u_PJ = zeros(nodes, 1);
 
-convPJ_th = max(eig(I + H_PJ\A));
+convPJ_th = max(eig(I + H_PJ\A)); %calculate the theoretical convergence
 
 r = inf;
 count = 0;
@@ -57,6 +57,9 @@ while r > tol
    
     u_PJ = (I + H_PJ\A)*u_PJ - H_PJ\f;
    
+    %this section of code calculates the residual and figures out if the
+    %residual has decreased by an order of magnitude. If so, the current
+    %solution is saved so it can be plotted for comparison later
     if count > 0
         r_old = r;
         r_new = max(abs(A*u_PJ - f));
@@ -77,6 +80,7 @@ while r > tol
    
 end
 
+%needed to fix the final vectors so they end at 1 (boundary condition)
 dom_final = linspace(0, 1, nodes+1);
 u_PJ(end + 1) = 1;
 u_PJ_1 = u_save(:,:,2);
@@ -86,6 +90,10 @@ u_PJ_2(end + 1) = 1;
 u_PJ_3 = u_save(:,:,4);
 u_PJ_3(end + 1) = 1;
 
+%calculate convergence rate
+p = polyfit(linspace(count-100, count), log(L2_PJ(end-99:end)), 1);
+conv_PJ = 1+p(1);
+
 figure(1)
 plot(dom_final,u_PJ_1, dom_final, u_PJ_2, dom_final, u_PJ_3,...
     dom_final, u_PJ, '--')
@@ -93,11 +101,14 @@ title('Point Jacobi Method')
 legend('Solution after 100x residual decrease',...
     'Solution after 1000x residual decrease',...
     'Solution after 10000x residual decrease', 'Final solution')
+xlabel('x')
+ylabel('u')
 
 iters = linspace(1, count, count);
 figure(2)
 plot(iters, log(L2_PJ))
 title('L2 Norm of Residual for Point Jacobi')
+xlabel('iteration #')
 
 % %% Gauss Seidel
 % %--------------------------------------------------------------------------
@@ -134,6 +145,7 @@ while r > tol
 
 end
 
+%fix final vectors so they end at 1 (boundary condition)
 u_GS(end + 1) = 1;
 u_GS_1 = u_save(:,:,2);
 u_GS_1(end + 1) = 1;
@@ -142,6 +154,10 @@ u_GS_2(end + 1) = 1;
 u_GS_3 = u_save(:,:,4);
 u_GS_3(end + 1) = 1;
 
+%calculate convergence rate
+p = polyfit(linspace(count-100, count), log(L2_GS(end-99:end)), 1);
+conv_GS = 1+p(1);
+
 figure(3)
 plot(dom_final,u_GS_1, dom_final, u_GS_2, dom_final, u_GS_3,...
     dom_final, u_GS, '--')
@@ -149,10 +165,13 @@ title('Gauss Seidel Method')
 legend('Solution after 100x residual decrease',...
     'Solution after 1000x residual decrease',...
     'Solution after 10000x residual decrease', 'Final solution')
+xlabel('x')
+ylabel('u')
 
 figure(4)
 plot(linspace(1, count, count), log(L2_GS))
 title('L2 Norm of Residual for Gauss Seidel')
+xlabel('iteration #')
 
 % %% SOR
 % %--------------------------------------------------------------------------
@@ -196,6 +215,10 @@ u_SOR_2(end + 1) = 1;
 u_SOR_3 = u_save(:,:,4);
 u_SOR_3(end + 1) = 1;
 
+%calculate convergence rate
+p = polyfit(linspace(count-100, count), log(L2_SOR(end-99:end)), 1);
+conv_SOR = 1+p(1);
+
 figure(5)
 plot(dom_final,u_SOR_1, dom_final, u_SOR_2, dom_final, u_SOR_3,...
     dom_final, u_SOR, '--')
@@ -203,11 +226,13 @@ title('Optimum SOR Method')
 legend('Solution after 100x residual decrease',...
     'Solution after 1000x residual decrease',...
     'Solution after 10000x residual decrease', 'Final solution')
+xlabel('x')
+ylabel('u')
 
 figure(6)
 plot(linspace(1, count, count), log(L2_SOR))
 title('L2 Norm of residual for Optimum SOR')
-
+xlabel('iteration #')
 
 %% 3-step Richardson
 %--------------------------------------------------------------------------
@@ -215,16 +240,22 @@ H_R = -diag(diag(A));
 u_R = zeros(nodes, 1);
 N = 3;
 
+%create step sizes for each step of the method
 for n = 1:3
     h(n) = 1/(.5*(-min(eig(A)) - max(eig(A)) + (min(eig(A)) - ...
         max(eig(A)))*cos((2*n - 1)*pi/(2*N))));
+    
+    convR_th(n) = max(eig(I + h(n)*(H_PJ\A)));
 end
+
+convR_th = max(convR_th);
 
 r = inf;
 count = 0;
 save_count = 1;
 while r > tol
    
+    %3-step process
     for i = 1:3
         u_R = (I + h(i)*(H_R\A))*u_R - h(i)*(H_R\f);
     end
@@ -257,6 +288,10 @@ u_R_2(end + 1) = 1;
 u_R_3 = u_save(:,:,4);
 u_R_3(end + 1) = 1;
 
+%calculate convergence rate
+p = polyfit(linspace(count-100, count), log(L2_R(end-99:end)), 1);
+conv_R = 1+p(1);
+
 figure(7)
 plot(dom_final,u_R_1, dom_final, u_R_2, dom_final, u_R_3,...
     dom_final, u_R, '--')
@@ -264,7 +299,16 @@ title('Richardson Method')
 legend('Solution after 100x residual decrease',...
     'Solution after 1000x residual decrease',...
     'Solution after 10000x residual decrease', 'Final solution')
+xlabel('x')
+ylabel('u')
 
 figure(8)
 plot(linspace(1, count, count), log(L2_R))
 title('L2 Norm of Residual for Richardson Method')
+xlabel('iteration #')
+
+fprintf('\n\n                THEORETICAL CONVERGENCE            CALCULATED CONVERGENCE')
+fprintf('\nPoint Jacobi          %d                      %d', convPJ_th, conv_PJ)
+fprintf('\nGauss Seidel          %d                      %d', convGS_th, conv_GS)
+fprintf('\nSOR                   %d                      %d', convSOR_th, conv_SOR)
+fprintf('\nRichardson''s          %d                      %d\n', convR_th, conv_R)
